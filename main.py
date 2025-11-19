@@ -11,8 +11,8 @@ import phonenumbers
 from datetime import datetime
 from telegram import Update, ReplyKeyboardMarkup, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ConversationHandler, CallbackContext, CallbackQueryHandler
-import psycopg2
-from psycopg2.extras import RealDictCursor
+import psycopg2-binary
+from psycopg2-binary.extras import RealDictCursor
 import random
 import string
 
@@ -60,7 +60,7 @@ def create_connection():
     """إنشاء اتصال بقاعدة البيانات"""
     try:
         config = get_database_config()
-        conn = psycopg2.connect(
+        conn = psycopg2-binary.connect(
             dbname=config['dbname'],
             user=config['user'],
             password=config['password'],
