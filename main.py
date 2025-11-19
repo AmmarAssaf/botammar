@@ -11,8 +11,8 @@ import phonenumbers
 from datetime import datetime
 from telegram import Update, ReplyKeyboardMarkup, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ConversationHandler, CallbackContext, CallbackQueryHandler
-import psycopg2-binary
-from psycopg2-binary.extras import RealDictCursor
+import psycopg2
+from psycopg2.extras import RealDictCursor
 import random
 import string
 
@@ -60,7 +60,7 @@ def create_connection():
     """إنشاء اتصال بقاعدة البيانات"""
     try:
         config = get_database_config()
-        conn = psycopg2-binary.connect(
+        conn = psycopg2.connect(
             dbname=config['dbname'],
             user=config['user'],
             password=config['password'],
@@ -576,6 +576,32 @@ async def cancel(update: Update, context: CallbackContext) -> int:
     )
     return ConversationHandler.END
 
+def test_database_connection():
+    """اختبار الاتصال بقاعدة البيانات"""
+    print("🔍 اختبار الاتصال بقاعدة البيانات...")
+    
+    # التحقق من وجود متغير DATABASE_URL
+    db_url = os.environ.get('DATABASE_URL')
+    if not db_url:
+        print("❌ لم يتم العثور على DATABASE_URL في متغيرات البيئة")
+        return False
+    
+    print(f"✅ تم العثور على DATABASE_URL")
+    print(f"📊 تفاصيل الاتصال: {db_url.split('@')[1] if '@' in db_url else 'مخفى'}")
+    
+    try:
+        conn = create_connection()
+        if conn:
+            print("✅ الاتصال بقاعدة البيانات ناجح!")
+            conn.close()
+            return True
+        else:
+            print("❌ فشل الاتصال بقاعدة البيانات")
+            return False
+    except Exception as e:
+        print(f"❌ خطأ في الاتصال: {e}")
+        return False
+
 # ==============================
 # 🎪 الدالة الرئيسية
 # ==============================
@@ -583,6 +609,11 @@ def main():
     """الدالة الرئيسية لتشغيل البوت"""
     
     print("🚀 بدء إعداد البوت للتجربة على Render...")
+    
+    # اختبر الاتصال أولاً
+    if not test_database_connection():
+        print("❌ لا يمكن تشغيل البوت بسبب مشكلة في قاعدة البيانات")
+        return  # ⬅️ أضف هذا السطر
     
     # التحقق من إعدادات قاعدة البيانات
     if not setup_database():
